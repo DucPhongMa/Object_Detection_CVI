@@ -1,32 +1,25 @@
-import cv2 as cv 
+from roboflow import Roboflow
+import supervision as sv
+import cv2
 
-# Start a video capture, using device's camera
-cap = cv.VideoCapture(0)
+rf = Roboflow(api_key="TCBsNOYUEBBmbox9rfUM")
+project = rf.workspace().project("head-count-ko384")
+model = project.version(1).model
 
-# Check if video file opened successfully
-if (cap.isOpened() == False):    
-  print("Error opening video stream or file")
+result = model.predict("./pic-5.jpg", confidence=40, overlap=30).json()
 
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
-print("Frame width: " , frame_width)
-print("Frame height: " , frame_height)
+labels = [item["class"] for item in result["predictions"]]
 
-cnt = 1
-# Read until video is completed
-while(cap.isOpened()):    
-  # Capture frame-by-frame    
-  ret, frame = cap.read()    
-  if ret == False:        
-    break       
-    # Display the frame    
-  cv.imshow('frame',frame)
-  key = cv.waitKey(25)
-  if key == ord('q'):
-    break  
+detections = sv.Detections.from_roboflow(result)
 
-# Release the video capture 
-cap.release()
+label_annotator = sv.LabelAnnotator()
+bounding_box_annotator = sv.BoxAnnotator()
 
-# Close all the frames
-cv.destroyAllWindows()
+image = cv2.imread("./pic-5.jpg")
+
+annotated_image = bounding_box_annotator.annotate(
+    scene=image, detections=detections)
+annotated_image = label_annotator.annotate(
+    scene=annotated_image, detections=detections, labels=labels)
+
+sv.plot_image(image=annotated_image, size=(16, 16))
