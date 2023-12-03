@@ -1,0 +1,12 @@
+names:
+- Person
+nc: 1
+roboflow:
+  license: MIT
+  project: head-count-ko384
+  url: https://universe.roboflow.com/senecacv2023/head-count-ko384/dataset/2
+  version: 2
+  workspace: senecacv2023
+test: ../test/images
+train: Head-Count-2/train/images
+val: Head-Count-2/valid/images
